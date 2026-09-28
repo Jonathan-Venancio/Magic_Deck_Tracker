@@ -1,5 +1,7 @@
 import type { AppData, Card, CardDraft, Collection, CollectionDraft, Deck, DeckDraft } from "@/lib/types.ts";
 
+export const API_BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -15,10 +17,33 @@ type MutationResponse<T = unknown> = AppData & {
   instanceId?: string;
 };
 
+function resolveMedia(url?: string) {
+  if (!url) return url;
+  if (/^(https?:|data:|blob:)/i.test(url)) return url;
+  if (!API_BASE) return url;
+  if (url.startsWith("/")) return `${API_BASE}${url}`;
+  return url;
+}
+
+export function normalizeAppData(data: AppData): AppData {
+  return {
+    collections: data.collections.map((collection) => {
+      const coverImage = resolveMedia(collection.coverImage);
+      return coverImage ? { ...collection, coverImage } : collection;
+    }),
+    cards: data.cards.map((card) => {
+      const image = resolveMedia(card.image);
+      return image ? { ...card, image } : card;
+    }),
+    decks: data.decks,
+    game: data.game ?? null,
+  };
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
-    response = await fetch(`/api${path}`, {
+    response = await fetch(`${API_BASE}/api${path}`, {
       headers: {
         "Content-Type": "application/json",
         ...(init?.headers ?? {}),

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from app import store
+from app.config import CORS_ORIGINS
 from app.database import Base, SessionLocal, engine, get_db
 from app.media import media_response
 from app.schemas import CardDraft, CardIdIn, CollectionDraft, DeckAdjustIn, DeckDraft, InstanceIn, SetupIn
@@ -25,7 +26,7 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(title="Magic Deck Tracker", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )

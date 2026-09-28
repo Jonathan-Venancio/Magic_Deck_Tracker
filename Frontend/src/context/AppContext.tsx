@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button.tsx";
-import { ApiError, api } from "@/lib/api.ts";
+import { ApiError, api, normalizeAppData } from "@/lib/api.ts";
 import type { AppData, Card, CardDraft, Collection, CollectionDraft, Deck, DeckDraft } from "@/lib/types.ts";
 
 type SaveResult<T> = { ok: true; value: T } | { ok: false; message: string };
@@ -45,12 +45,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState("");
 
   const apply = useCallback((data: AppData) => {
-    setState({
-      collections: data.collections,
-      cards: data.cards,
-      decks: data.decks,
-      game: data.game ?? null,
-    });
+    setState(normalizeAppData(data));
   }, []);
 
   const load = useCallback(async () => {
