@@ -24,32 +24,35 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: false,
       includeAssets: ['logo.png', 'pwa-192x192.png', 'pwa-512x512.png', 'pwa-512x512-maskable.png', 'apple-touch-icon.png'],
       manifest: {
+        id: '/',
         name: 'Magic Deck Tracker',
         short_name: 'Deck Tracker',
         description: 'Consulte traduções das suas cartas físicas de Magic durante a partida.',
         theme_color: '#0c0b09',
         background_color: '#0c0b09',
         display: 'standalone',
-        orientation: 'portrait',
         scope: '/',
         start_url: '/',
         lang: 'pt-BR',
         categories: ['games', 'utilities'],
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: '/pwa-192x192.png',
             sizes: '192x192',
             type: 'image/png',
+            purpose: 'any',
           },
           {
-            src: 'pwa-512x512.png',
+            src: '/pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
+            purpose: 'any',
           },
           {
-            src: 'pwa-512x512-maskable.png',
+            src: '/pwa-512x512-maskable.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
@@ -71,8 +74,10 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,svg,woff2,webmanifest}', 'pwa-*.png', 'apple-touch-icon.png'],
+        globIgnores: ['**/logo.png', '**/logo.ico'],
         navigateFallback: 'index.html',
+        navigateFallbackDenylist: [/^\/api\//],
       },
       devOptions: {
         enabled: false,

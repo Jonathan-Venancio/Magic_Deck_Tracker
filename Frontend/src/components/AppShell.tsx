@@ -3,6 +3,7 @@ import { Link, Outlet } from "react-router-dom";
 import { useState } from "react";
 import { AddMenu } from "@/components/AddMenu.tsx";
 import { BottomNavigation, SideNavigation } from "@/components/BottomNavigation.tsx";
+import { InstallAppButton } from "@/components/InstallAppButton.tsx";
 import { Logo } from "@/components/Logo.tsx";
 import { Button } from "@/components/ui/button.tsx";
 
@@ -14,6 +15,7 @@ export function AppShell() {
         <Logo />
         <SideNavigation />
         <div className="mt-auto grid gap-2">
+          <InstallAppButton />
           <Button asChild>
             <Link to="/carta/nova">Adicionar carta</Link>
           </Button>
@@ -28,14 +30,17 @@ export function AppShell() {
       <div className="lg:pl-64">
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-white/5 bg-background/80 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-md lg:hidden">
           <Logo />
-          <button
-            type="button"
-            onClick={() => setAddOpen(true)}
-            className="grid size-11 place-items-center rounded-2xl bg-gold-deep text-foreground"
-            aria-label="Adicionar"
-          >
-            <Plus className="size-5" />
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <InstallAppButton compact />
+            <button
+              type="button"
+              onClick={() => setAddOpen(true)}
+              className="grid size-11 place-items-center rounded-2xl bg-gold-deep text-foreground"
+              aria-label="Adicionar"
+            >
+              <Plus className="size-5" />
+            </button>
+          </div>
         </header>
         <main className="pb-32 lg:pb-10">
           <Outlet />
