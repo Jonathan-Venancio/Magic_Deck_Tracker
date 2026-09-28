@@ -61,7 +61,7 @@ export function QuickCardSearch({
   }
 
   return (
-    <div>
+    <div className="min-w-0">
       <SearchBar
         value={query}
         onChange={(value) => {
@@ -81,7 +81,7 @@ export function QuickCardSearch({
         }}
       />
       <p className="mt-2 text-xs text-muted">Dica: 127 encontra #127. 14 também encontra #014.</p>
-      <div className="mt-4 grid gap-3" aria-live="polite">
+      <div className="mt-4 grid min-w-0 gap-3" aria-live="polite">
         {!query.trim() ? (
           <p className="rounded-2xl border border-dashed border-line px-4 py-6 text-center text-sm text-muted">
             {mode === "acquire"
@@ -96,7 +96,7 @@ export function QuickCardSearch({
         ) : null}
         {showResultList
           ? results.map((card) => (
-              <div key={card.id} className="animate-rise">
+              <div key={card.id} className="min-w-0 animate-rise">
                 <CardSearchResult
                   card={card}
                   collectionName={collectionName(card)}

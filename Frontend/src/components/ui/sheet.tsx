@@ -65,7 +65,7 @@ export function Sheet({
               )}
             </>
           )}
-          <div className={cn(fullscreen ? "min-h-0 flex-1 overflow-y-auto px-4 py-4" : "mt-4")}>{children}</div>
+          <div className={cn(fullscreen ? "min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-4" : "mt-4")}>{children}</div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

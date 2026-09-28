@@ -24,7 +24,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'pwa-192x192.png', 'pwa-512x512.png', 'apple-touch-icon.png'],
+      includeAssets: ['logo.png', 'pwa-192x192.png', 'pwa-512x512.png', 'pwa-512x512-maskable.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'Magic Deck Tracker',
         short_name: 'Deck Tracker',
@@ -49,7 +49,7 @@ export default defineConfig({
             type: 'image/png',
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'pwa-512x512-maskable.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',

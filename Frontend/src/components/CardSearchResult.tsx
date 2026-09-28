@@ -40,14 +40,14 @@ export function CardSearchResult({
           {collectionName}
           {detail ? ` · ${detail}` : ""}
         </span>
+        <ColorPips colors={card.colors} className="mt-1.5" />
       </span>
-      <ColorPips colors={card.colors} />
-      {action}
+      {action ? <span className="shrink-0 self-center">{action}</span> : null}
     </>
   );
 
   const className =
-    "flex w-full items-center gap-3 rounded-2xl border border-line bg-card px-3 py-3 text-left transition-colors hover:border-gold/40 touch-manipulation";
+    "flex w-full min-w-0 max-w-full items-center gap-2.5 overflow-hidden rounded-2xl border border-line bg-card px-3 py-3 text-left transition-colors hover:border-gold/40 touch-manipulation";
 
   if (onClick) {
     return (

@@ -54,7 +54,7 @@ export function CollectionPage() {
       </div>
 
       {query.trim() ? (
-        <div className="mt-4 grid gap-2">
+        <div className="mt-4 grid min-w-0 gap-2">
           {results.map((card) => {
             const collection = collections.find((item) => item.id === card.collectionId);
             return (

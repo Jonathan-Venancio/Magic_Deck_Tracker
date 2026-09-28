@@ -39,11 +39,19 @@ export function ManaBadge({ cost }: { cost: string }) {
   );
 }
 
-export function ColorPips({ colors, names = false }: { colors: ManaColor[]; names?: boolean }) {
+export function ColorPips({
+  colors,
+  names = false,
+  className,
+}: {
+  colors: ManaColor[];
+  names?: boolean;
+  className?: string;
+}) {
   const ordered = sortColors(colors);
-  if (!ordered.length) return <span className="text-sm text-muted">Incolor</span>;
+  if (!ordered.length) return <span className={cn("text-sm text-muted", className)}>Incolor</span>;
   return (
-    <span className="inline-flex flex-wrap items-center gap-1.5">
+    <span className={cn("inline-flex flex-wrap items-center gap-1.5", className)}>
       {ordered.map((color) => (
         <ManaPip key={color} symbol={color} />
       ))}

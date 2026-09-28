@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { X } from "lucide-react";
 import { CardSearchResult } from "@/components/CardSearchResult.tsx";
 import { PageHeader } from "@/components/PageHeader.tsx";
 import { QuickCardSearch } from "@/components/QuickCardSearch.tsx";
@@ -19,7 +20,7 @@ export function InitialHandPage() {
   if (game.phase === "active") return <Navigate to="/jogar/partida" replace />;
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-lg px-4 pt-4 pb-40">
+    <div className="mx-auto min-h-dvh w-full min-w-0 max-w-lg px-4 pt-4 pb-40">
       <PageHeader
         title="Sua mão inicial"
         subtitle="Adicione as cartas que estão na sua mão física."
@@ -39,7 +40,7 @@ export function InitialHandPage() {
         }}
       />
       <p className="mt-6 text-sm font-semibold text-gold">Mão: {pluralCards(game.hand.length)}</p>
-      <div className="mt-3 grid gap-2">
+      <div className="mt-3 grid min-w-0 gap-2">
         {game.hand.map((instance) => {
           const card = cards.find((item) => item.id === instance.cardId);
           if (!card) return null;
@@ -53,9 +54,10 @@ export function InitialHandPage() {
                 <button
                   type="button"
                   onClick={() => void removeFromHand(instance.instanceId)}
-                  className="text-sm text-danger"
+                  className="grid size-11 shrink-0 place-items-center rounded-full bg-danger/15 text-danger"
+                  aria-label={`Remover ${card.name} da mão`}
                 >
-                  Remover
+                  <X className="size-5" />
                 </button>
               }
             />

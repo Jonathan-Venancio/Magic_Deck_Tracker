@@ -74,7 +74,7 @@ export function CardSelector({
           ))}
         </ChipRow>
       </div>
-      <div className="mt-4 grid gap-2">
+      <div className="mt-4 grid min-w-0 gap-2">
         {results.map((card) => {
           const inDeck = entries.find((entry) => entry.cardId === card.id)?.quantity ?? 0;
           const collectionName = collections.find((collection) => collection.id === card.collectionId)?.name ?? "";
