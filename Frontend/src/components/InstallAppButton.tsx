@@ -34,10 +34,11 @@ export function InstallAppButton({ compact = false }: { compact?: boolean }) {
   }, []);
 
   if (!installEvent) return null;
+  const promptEvent = installEvent;
 
   async function install() {
-    await installEvent.prompt();
-    const choice = await installEvent.userChoice;
+    await promptEvent.prompt();
+    const choice = await promptEvent.userChoice;
     if (choice.outcome === "accepted") setInstallEvent(null);
   }
 
