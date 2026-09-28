@@ -74,7 +74,7 @@ export function CardViewer({
           <button
             type="button"
             onClick={() => setTextOpen((value) => !value)}
-            className="h-12 w-full rounded-2xl bg-gold font-semibold text-ink"
+            className="h-12 w-full rounded-2xl bg-gold-deep font-semibold text-foreground"
           >
             {textOpen ? "Ocultar tradução" : "Ver tradução"}
           </button>

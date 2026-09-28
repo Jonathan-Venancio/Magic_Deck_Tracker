@@ -1,14 +1,18 @@
+import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { CardSearchResult } from "@/components/CardSearchResult.tsx";
 import { PageHeader } from "@/components/PageHeader.tsx";
 import { QuickCardSearch } from "@/components/QuickCardSearch.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { useApp } from "@/context/AppContext.tsx";
-import { pluralCards } from "@/lib/format.ts";
+import { firstName, pluralCards } from "@/lib/format.ts";
+import { cn } from "@/lib/utils.ts";
 
 export function InitialHandPage() {
   const { game, decks, cards, collections, addToHand, removeFromHand, beginMatch } = useApp();
   const navigate = useNavigate();
+  const [searching, setSearching] = useState(false);
   const deck = decks.find((item) => item.id === game?.deckId);
 
   if (!game || !deck) return <Navigate to="/jogar" replace />;
@@ -22,7 +26,17 @@ export function InitialHandPage() {
         backTo="/jogar"
       />
       <p className="mb-4 text-sm text-muted">{deck.name}</p>
-      <QuickCardSearch mode="acquire" deckId={deck.id} autoFocus onAddToHand={(card) => addToHand(card.id)} />
+      <QuickCardSearch
+        mode="acquire"
+        deckId={deck.id}
+        autoFocus
+        onFocus={() => setSearching(true)}
+        onBlur={() => setSearching(false)}
+        onAddToHand={(card) => {
+          addToHand(card.id);
+          toast.success(`${firstName(card.name)} adicionada à sua mão`);
+        }}
+      />
       <p className="mt-6 text-sm font-semibold text-gold">Mão: {pluralCards(game.hand.length)}</p>
       <div className="mt-3 grid gap-2">
         {game.hand.map((instance) => {
@@ -47,7 +61,12 @@ export function InitialHandPage() {
           );
         })}
       </div>
-      <div className="fixed inset-x-0 bottom-0 border-t border-line bg-ink/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-20 border-t border-line bg-ink/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]",
+          searching && "pointer-events-none invisible",
+        )}
+      >
         <div className="mx-auto max-w-lg">
           <Button
             className="w-full"

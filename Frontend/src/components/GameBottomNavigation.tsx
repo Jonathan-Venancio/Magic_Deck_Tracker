@@ -44,7 +44,7 @@ export function GameBottomNavigation({
             onClick={() => onChange("draw")}
             className="flex w-full -translate-y-3 flex-col items-center gap-1"
           >
-            <span className="grid size-16 place-items-center rounded-full bg-gold text-ink shadow-[0_10px_30px_rgba(224,177,90,0.35)]">
+            <span className="grid size-16 place-items-center rounded-full bg-gold-deep text-foreground shadow-[0_10px_30px_rgba(28,103,15,0.45)]">
               <Plus className="size-7" />
             </span>
             <span className="text-xs font-semibold text-gold">Comprar</span>

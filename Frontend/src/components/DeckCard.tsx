@@ -7,7 +7,7 @@ import type { Card, Collection, Deck } from "@/lib/types.ts";
 
 export function DeckMark({ colors }: { colors: ReturnType<typeof deckColors> }) {
   return (
-    <span className="grid h-24 w-16 shrink-0 place-items-center rounded-2xl border border-gold/30 bg-[linear-gradient(180deg,#2a241c,#141210)]">
+    <span className="grid h-24 w-16 shrink-0 place-items-center rounded-2xl border border-gold/30 bg-[linear-gradient(180deg,#163214,#0c110b)]">
       <span className="flex flex-col gap-1">
         {colors.length ? colors.map((color) => <ManaPip key={color} symbol={color} />) : <span className="text-xs text-muted">—</span>}
       </span>

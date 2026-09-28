@@ -9,9 +9,10 @@
   --color-muted: #a89b8a;
   --color-card: #1a1714;
   --color-raised: #26211c;
-  --color-line: rgba(224, 177, 90, 0.18);
-  --color-gold: #e0b15a;
-  --color-gold-bright: #f3d7a1;
+  --color-line: rgba(95, 191, 74, 0.22);
+  --color-gold: #5fbf4a;
+  --color-gold-bright: #8fdb7a;
+  --color-gold-deep: #1c670f;
   --color-danger: #e07a6a;
   --animate-rise: rise 220ms ease-out both;
   --animate-deal: deal 280ms ease-out both;
@@ -59,7 +60,7 @@ body {
   margin: 0;
   min-height: 100dvh;
   background:
-    radial-gradient(900px 420px at 50% -12%, rgba(224, 177, 90, 0.14), transparent 60%),
+    radial-gradient(900px 420px at 50% -12%, rgba(28, 103, 15, 0.42), transparent 60%),
     var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans);
@@ -73,7 +74,7 @@ select {
 }
 
 ::selection {
-  background: rgba(224, 177, 90, 0.35);
+  background: rgba(28, 103, 15, 0.45);
   color: var(--color-foreground);
 }
 

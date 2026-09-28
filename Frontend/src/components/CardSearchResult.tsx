@@ -46,11 +46,17 @@ export function CardSearchResult({
     </>
   );
 
-  const className = "flex w-full items-center gap-3 rounded-2xl border border-line bg-card px-3 py-3 text-left transition-colors hover:border-gold/40";
+  const className =
+    "flex w-full items-center gap-3 rounded-2xl border border-line bg-card px-3 py-3 text-left transition-colors hover:border-gold/40 touch-manipulation";
 
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className={className}>
+      <button
+        type="button"
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={onClick}
+        className={className}
+      >
         {body}
       </button>
     );

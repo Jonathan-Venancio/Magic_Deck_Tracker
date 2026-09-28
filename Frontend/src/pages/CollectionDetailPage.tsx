@@ -90,7 +90,7 @@ export function CollectionDetailPage() {
           <button
             type="button"
             onClick={() => setView("grid")}
-            className={`grid size-11 place-items-center rounded-2xl border ${view === "grid" ? "border-gold bg-gold text-ink" : "border-line bg-card"}`}
+            className={`grid size-11 place-items-center rounded-2xl border ${view === "grid" ? "border-gold-deep bg-gold-deep text-foreground" : "border-line bg-card"}`}
             aria-label="Ver em grade"
           >
             <LayoutGrid className="size-4" />
@@ -98,7 +98,7 @@ export function CollectionDetailPage() {
           <button
             type="button"
             onClick={() => setView("list")}
-            className={`grid size-11 place-items-center rounded-2xl border ${view === "list" ? "border-gold bg-gold text-ink" : "border-line bg-card"}`}
+            className={`grid size-11 place-items-center rounded-2xl border ${view === "list" ? "border-gold-deep bg-gold-deep text-foreground" : "border-line bg-card"}`}
             aria-label="Ver em lista"
           >
             <List className="size-4" />
@@ -117,7 +117,7 @@ export function CollectionDetailPage() {
                 : "Adicione sua primeira carta para começar."
             }
             action={
-              <Link to="/carta/nova" className="inline-flex h-12 items-center rounded-2xl bg-gold px-5 font-semibold text-ink">
+              <Link to="/carta/nova" className="inline-flex h-12 items-center rounded-2xl bg-gold-deep px-5 font-semibold text-foreground">
                 Adicionar carta
               </Link>
             }

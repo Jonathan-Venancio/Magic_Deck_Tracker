@@ -70,7 +70,7 @@ export function DeckBuilderPage() {
               <button
                 type="button"
                 onClick={() => change(card.id, 1)}
-                className="grid size-11 place-items-center rounded-full bg-gold text-ink"
+                className="grid size-11 place-items-center rounded-full bg-gold-deep text-foreground"
                 aria-label="Aumentar"
               >
                 <Plus className="size-4" />
@@ -98,7 +98,7 @@ export function DeckBuilderPage() {
           </p>
         </div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-          <div className="h-full rounded-full bg-gold transition-all" style={{ width: `${progress}%` }} />
+          <div className="h-full rounded-full bg-gold-deep transition-all" style={{ width: `${progress}%` }} />
         </div>
         <div className="mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
           <p>Criaturas: {summary.creatures}</p>
@@ -113,14 +113,14 @@ export function DeckBuilderPage() {
         <button
           type="button"
           onClick={() => setTab("collection")}
-          className={cn("h-11 rounded-2xl text-sm font-semibold", tab === "collection" ? "bg-gold text-ink" : "border border-line bg-card")}
+          className={cn("h-11 rounded-2xl text-sm font-semibold", tab === "collection" ? "bg-gold-deep text-foreground" : "border border-line bg-card")}
         >
           Minha coleção
         </button>
         <button
           type="button"
           onClick={() => setTab("deck")}
-          className={cn("h-11 rounded-2xl text-sm font-semibold", tab === "deck" ? "bg-gold text-ink" : "border border-line bg-card")}
+          className={cn("h-11 rounded-2xl text-sm font-semibold", tab === "deck" ? "bg-gold-deep text-foreground" : "border border-line bg-card")}
         >
           Cartas no deck
         </button>

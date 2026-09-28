@@ -32,6 +32,7 @@ export function Sheet({
             event.preventDefault();
             initialFocusRef.current.focus();
           }}
+          onCloseAutoFocus={(event) => event.preventDefault()}
           className={cn(
             "sheet-panel fixed z-50 border-line bg-ink outline-none",
             fullscreen

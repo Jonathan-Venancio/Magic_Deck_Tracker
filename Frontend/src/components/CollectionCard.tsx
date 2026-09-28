@@ -22,7 +22,7 @@ export function CollectionCard({
         {collection.coverImage ? (
           <img src={collection.coverImage} alt="" className="h-full w-full object-cover" />
         ) : (
-          <span className="grid h-full place-items-center bg-[linear-gradient(160deg,#2a241c,#141210)] text-2xl font-semibold tracking-[0.22em] text-gold">
+          <span className="grid h-full place-items-center bg-[linear-gradient(160deg,#163214,#0c110b)] text-2xl font-semibold tracking-[0.22em] text-gold">
             {collection.code || collection.name.slice(0, 2).toUpperCase()}
           </span>
         )}

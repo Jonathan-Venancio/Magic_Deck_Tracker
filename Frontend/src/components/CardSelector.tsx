@@ -87,7 +87,7 @@ export function CardSelector({
               badge={inDeck ? `No deck · x${inDeck}` : undefined}
               onClick={() => onAdd(card.id)}
               action={
-                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-gold text-ink">
+                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-gold-deep text-foreground">
                   <Plus className="size-5" />
                 </span>
               }

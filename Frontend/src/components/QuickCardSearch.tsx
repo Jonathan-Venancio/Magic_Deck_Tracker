@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import { useMemo, useRef, useState, type RefObject } from "react";
 import { CardImagePlaceholder } from "@/components/CardImagePlaceholder.tsx";
 import { CardSearchResult } from "@/components/CardSearchResult.tsx";
@@ -9,6 +10,10 @@ import { formatNumber } from "@/lib/format.ts";
 import { searchCards } from "@/lib/search.ts";
 import type { Card } from "@/lib/types.ts";
 
+function keepInputFocus(event: { preventDefault: () => void }) {
+  event.preventDefault();
+}
+
 export function QuickCardSearch({
   mode,
   deckId,
@@ -16,6 +21,8 @@ export function QuickCardSearch({
   onOpenCard,
   inputRef: externalRef,
   autoFocus = false,
+  onFocus,
+  onBlur,
 }: {
   mode: "consult" | "acquire";
   deckId?: string;
@@ -23,6 +30,8 @@ export function QuickCardSearch({
   onOpenCard?: (card: Card) => void;
   inputRef?: RefObject<HTMLInputElement | null>;
   autoFocus?: boolean;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const { cards, collections, decks } = useApp();
   const [query, setQuery] = useState("");
@@ -38,6 +47,7 @@ export function QuickCardSearch({
   );
 
   const selected = results.length === 1 ? results[0] : results.find((card) => card.id === pinnedId);
+  const showResultList = results.length > 0 && (mode === "acquire" || (results.length > 1 && !selected));
 
   function collectionName(card: Card) {
     return collections.find((collection) => collection.id === card.collectionId)?.name ?? "Coleção";
@@ -47,7 +57,7 @@ export function QuickCardSearch({
     onAddToHand?.(card);
     setQuery("");
     setPinnedId(null);
-    inputRef.current?.focus();
+    requestAnimationFrame(() => inputRef.current?.focus());
   }
 
   return (
@@ -61,6 +71,8 @@ export function QuickCardSearch({
         placeholder="Digite o número ou nome..."
         autoFocus={autoFocus}
         inputRef={inputRef}
+        onFocus={onFocus}
+        onBlur={onBlur}
         onEnter={() => {
           const target = selected ?? results[0];
           if (!target) return;
@@ -82,19 +94,26 @@ export function QuickCardSearch({
             Nenhuma carta encontrada.
           </p>
         ) : null}
-        {results.length > 1 && !selected
+        {showResultList
           ? results.map((card) => (
               <div key={card.id} className="animate-rise">
                 <CardSearchResult
                   card={card}
                   collectionName={collectionName(card)}
                   badge={ids.has(card.id) ? "No deck" : undefined}
-                  onClick={() => setPinnedId(card.id)}
+                  onClick={() => (mode === "acquire" ? add(card) : setPinnedId(card.id))}
+                  action={
+                    mode === "acquire" ? (
+                      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-gold-deep text-foreground">
+                        <Plus className="size-5" />
+                      </span>
+                    ) : undefined
+                  }
                 />
               </div>
             ))
           : null}
-        {selected ? (
+        {selected && mode === "consult" ? (
           <article className="animate-rise scroll-mb-40 rounded-3xl border border-line bg-card p-4">
             {results.length > 1 ? (
               <button type="button" onClick={() => setPinnedId(null)} className="mb-3 text-sm text-gold">
@@ -114,20 +133,44 @@ export function QuickCardSearch({
               {collectionName(selected)}
               {ids.has(selected.id) ? " · No deck" : ""}
             </p>
-            {mode === "acquire" ? (
-              <Button className="mt-4 w-full" size="lg" onClick={() => add(selected)}>
-                Adicionar à mão
-              </Button>
-            ) : null}
             <h4 className="mt-4 text-sm font-semibold uppercase tracking-wide text-muted">Tradução</h4>
             <p className="mt-2 whitespace-pre-wrap font-serif text-lg leading-relaxed">
               {selected.text || "Nenhuma tradução cadastrada."}
             </p>
-            {mode === "consult" && selected.image ? (
+            {selected.image ? (
               <Button className="mt-4 w-full" variant="secondary" onClick={() => onOpenCard?.(selected)}>
                 Abrir imagem
               </Button>
             ) : null}
+          </article>
+        ) : null}
+        {selected && mode === "acquire" && results.length === 1 ? (
+          <article className="animate-rise scroll-mb-40 rounded-3xl border border-line bg-card p-4">
+            <Button
+              className="mb-4 w-full"
+              size="lg"
+              onMouseDown={keepInputFocus}
+              onClick={() => add(selected)}
+            >
+              Adicionar à mão
+            </Button>
+            {selected.image ? (
+              <button type="button" onClick={() => onOpenCard?.(selected)} className="mx-auto block w-44">
+                <img src={selected.image} alt={selected.name} className="aspect-[63/88] w-full rounded-2xl object-cover" />
+              </button>
+            ) : (
+              <CardImagePlaceholder className="h-28 w-full rounded-2xl" compact />
+            )}
+            <p className="mt-4 text-sm font-semibold text-gold">{formatNumber(selected.number)}</p>
+            <h3 className="text-2xl font-semibold leading-tight">{selected.name}</h3>
+            <p className="mt-1 text-sm text-muted">
+              {collectionName(selected)}
+              {ids.has(selected.id) ? " · No deck" : ""}
+            </p>
+            <h4 className="mt-4 text-sm font-semibold uppercase tracking-wide text-muted">Tradução</h4>
+            <p className="mt-2 whitespace-pre-wrap font-serif text-lg leading-relaxed">
+              {selected.text || "Nenhuma tradução cadastrada."}
+            </p>
           </article>
         ) : null}
       </div>

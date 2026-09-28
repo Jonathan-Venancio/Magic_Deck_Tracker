@@ -8,6 +8,8 @@ export function SearchBar({
   autoFocus = false,
   inputRef,
   onEnter,
+  onFocus,
+  onBlur,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -15,26 +17,34 @@ export function SearchBar({
   autoFocus?: boolean;
   inputRef?: RefObject<HTMLInputElement | null>;
   onEnter?: () => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   return (
     <label className="flex h-14 items-center gap-3 rounded-2xl border border-line bg-raised px-4 focus-within:border-gold/60">
       <Search className="size-5 shrink-0 text-gold" aria-hidden />
       <input
         ref={inputRef}
+        type="search"
         value={value}
         autoFocus={autoFocus}
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={(event) => {
-          if (event.key === "Enter") onEnter?.();
+          if (event.key === "Enter") {
+            event.preventDefault();
+            onEnter?.();
+          }
         }}
         placeholder={placeholder}
-        enterKeyHint="search"
+        enterKeyHint={onEnter ? "done" : "search"}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck={false}
-        className="h-full w-full bg-transparent text-[18px] text-foreground outline-none placeholder:text-muted"
+        className="h-full w-full appearance-none bg-transparent text-[16px] text-foreground outline-none placeholder:text-muted [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
         aria-label={placeholder}
+        onFocus={onFocus}
+        onBlur={onBlur}
       />
       {value ? (
         <button

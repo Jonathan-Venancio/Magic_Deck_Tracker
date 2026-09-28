@@ -167,7 +167,7 @@ export function CardFormPage() {
                     key={color}
                     type="button"
                     onClick={() => toggleColor(color)}
-                    className={`h-10 rounded-full px-4 text-sm ${colors.includes(color) ? "bg-gold text-ink" : "border border-line bg-card"}`}
+                    className={`h-10 rounded-full px-4 text-sm ${colors.includes(color) ? "bg-gold-deep text-foreground" : "border border-line bg-card"}`}
                   >
                     {COLOR_LABEL[color]}
                   </button>

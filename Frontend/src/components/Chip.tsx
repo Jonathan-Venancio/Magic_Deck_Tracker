@@ -16,7 +16,7 @@ export function Chip({
       onClick={onClick}
       className={cn(
         "h-10 shrink-0 rounded-full border px-4 text-sm font-medium transition-colors",
-        active ? "border-gold bg-gold text-ink" : "border-line bg-card text-foreground",
+        active ? "border-gold-deep bg-gold-deep text-foreground" : "border-line bg-card text-foreground",
       )}
     >
       {children}

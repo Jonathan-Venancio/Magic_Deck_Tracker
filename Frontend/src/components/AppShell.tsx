@@ -31,7 +31,7 @@ export function AppShell() {
           <button
             type="button"
             onClick={() => setAddOpen(true)}
-            className="grid size-11 place-items-center rounded-2xl bg-gold text-ink"
+            className="grid size-11 place-items-center rounded-2xl bg-gold-deep text-foreground"
             aria-label="Adicionar"
           >
             <Plus className="size-5" />

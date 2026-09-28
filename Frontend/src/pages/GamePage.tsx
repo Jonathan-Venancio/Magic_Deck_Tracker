@@ -112,14 +112,14 @@ export function GamePage() {
                 <button
                   type="button"
                   onClick={() => setSideMode("consult")}
-                  className={`h-11 rounded-2xl text-sm font-semibold ${sideMode === "consult" ? "bg-gold text-ink" : "border border-line"}`}
+                  className={`h-11 rounded-2xl text-sm font-semibold ${sideMode === "consult" ? "bg-gold-deep text-foreground" : "border border-line"}`}
                 >
                   Consultar
                 </button>
                 <button
                   type="button"
                   onClick={() => setSideMode("acquire")}
-                  className={`h-11 rounded-2xl text-sm font-semibold ${sideMode === "acquire" ? "bg-gold text-ink" : "border border-line"}`}
+                  className={`h-11 rounded-2xl text-sm font-semibold ${sideMode === "acquire" ? "bg-gold-deep text-foreground" : "border border-line"}`}
                 >
                   Comprar
                 </button>

@@ -4,11 +4,11 @@ import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/utils.ts";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl font-semibold transition-all active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl font-semibold transition-all active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 touch-manipulation",
   {
     variants: {
       variant: {
-        default: "bg-gold text-ink hover:bg-gold-bright",
+        default: "bg-gold-deep text-foreground hover:bg-gold",
         secondary: "border border-line bg-raised text-foreground hover:border-gold/40",
         ghost: "bg-transparent text-foreground hover:bg-white/5",
         outline: "border border-gold/40 text-gold hover:bg-gold/10",
