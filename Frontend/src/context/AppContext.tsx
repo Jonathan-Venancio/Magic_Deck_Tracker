@@ -1,295 +1,168 @@
-import { createContext, useContext, useEffect, useReducer, type ReactNode } from "react";
-import { createMockData } from "@/data/mock.ts";
-import { adjustEntries } from "@/lib/deck.ts";
-import { normalizeNumber } from "@/lib/format.ts";
-import { loadState, saveState } from "@/lib/storage.ts";
-import type {
-  AppData,
-  Card,
-  CardDraft,
-  Collection,
-  CollectionDraft,
-  Deck,
-  DeckDraft,
-} from "@/lib/types.ts";
-import { createId } from "@/lib/utils.ts";
-
-type Action =
-  | { type: "add-collection"; collection: Collection }
-  | { type: "add-card"; card: Card }
-  | { type: "update-card"; card: Card }
-  | { type: "add-deck"; deck: Deck }
-  | { type: "update-deck"; deck: Deck }
-  | { type: "adjust-deck"; deckId: string; cardId: string; delta: number }
-  | { type: "start-setup"; deckId: string; at: string }
-  | { type: "add-instance"; instanceId: string; cardId: string }
-  | { type: "remove-instance"; instanceId: string }
-  | { type: "begin"; at: string }
-  | { type: "play"; instanceId: string }
-  | { type: "discard"; instanceId: string }
-  | { type: "restart" }
-  | { type: "end"; at: string };
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button.tsx";
+import { ApiError, api } from "@/lib/api.ts";
+import type { AppData, Card, CardDraft, Collection, CollectionDraft, Deck, DeckDraft } from "@/lib/types.ts";
 
 type SaveResult<T> = { ok: true; value: T } | { ok: false; message: string };
 
 interface AppContextValue extends AppData {
-  addCollection: (draft: CollectionDraft) => SaveResult<Collection>;
-  addCard: (draft: CardDraft) => SaveResult<Card>;
-  updateCard: (id: string, draft: CardDraft) => SaveResult<Card>;
-  addDeck: (draft: DeckDraft) => SaveResult<Deck>;
-  updateDeck: (id: string, draft: DeckDraft) => SaveResult<Deck>;
-  adjustDeckCard: (deckId: string, cardId: string, delta: number) => void;
-  startSetup: (deckId: string) => void;
-  addToHand: (cardId: string) => string | null;
-  removeFromHand: (instanceId: string) => void;
-  beginMatch: () => void;
-  playCard: (instanceId: string) => void;
-  discardCard: (instanceId: string) => void;
-  restartMatch: () => void;
-  endMatch: () => void;
+  ready: boolean;
+  addCollection: (draft: CollectionDraft) => Promise<SaveResult<Collection>>;
+  addCard: (draft: CardDraft) => Promise<SaveResult<Card>>;
+  updateCard: (id: string, draft: CardDraft) => Promise<SaveResult<Card>>;
+  addDeck: (draft: DeckDraft) => Promise<SaveResult<Deck>>;
+  updateDeck: (id: string, draft: DeckDraft) => Promise<SaveResult<Deck>>;
+  adjustDeckCard: (deckId: string, cardId: string, delta: number) => Promise<void>;
+  startSetup: (deckId: string) => Promise<void>;
+  addToHand: (cardId: string) => Promise<string | null>;
+  removeFromHand: (instanceId: string) => Promise<void>;
+  beginMatch: () => Promise<void>;
+  playCard: (instanceId: string) => Promise<void>;
+  discardCard: (instanceId: string) => Promise<void>;
+  restartMatch: () => Promise<void>;
+  endMatch: () => Promise<void>;
 }
 
+const EMPTY: AppData = { collections: [], cards: [], decks: [], game: null };
 const AppContext = createContext<AppContextValue | null>(null);
 
-function touchDeck(decks: Deck[], deckId: string, at: string): Deck[] {
-  return decks.map((deck) => (deck.id === deckId ? { ...deck, lastUsedAt: at } : deck));
+function failMessage(error: unknown, fallback: string) {
+  return error instanceof ApiError ? error.message : fallback;
 }
 
-function withoutEmptyImage<T extends { image?: string }>(value: T): T {
-  if (!value.image) {
-    const next = { ...value };
-    delete next.image;
-    return next;
+async function asSaveResult<T>(run: () => Promise<T>): Promise<SaveResult<T>> {
+  try {
+    return { ok: true, value: await run() };
+  } catch (error) {
+    return { ok: false, message: failMessage(error, "Não foi possível salvar.") };
   }
-  return value;
-}
-
-function reducer(state: AppData, action: Action): AppData {
-  switch (action.type) {
-    case "add-collection":
-      return { ...state, collections: [...state.collections, action.collection] };
-    case "add-card":
-      return { ...state, cards: [...state.cards, action.card] };
-    case "update-card":
-      return {
-        ...state,
-        cards: state.cards.map((card) => (card.id === action.card.id ? action.card : card)),
-      };
-    case "add-deck":
-      return { ...state, decks: [action.deck, ...state.decks] };
-    case "update-deck":
-      return {
-        ...state,
-        decks: state.decks.map((deck) => (deck.id === action.deck.id ? action.deck : deck)),
-      };
-    case "adjust-deck":
-      return {
-        ...state,
-        decks: state.decks.map((deck) =>
-          deck.id === action.deckId
-            ? { ...deck, entries: adjustEntries(deck.entries, action.cardId, action.delta) }
-            : deck,
-        ),
-      };
-    case "start-setup":
-      return {
-        ...state,
-        decks: touchDeck(state.decks, action.deckId, action.at),
-        game: {
-          deckId: action.deckId,
-          phase: "setup",
-          hand: [],
-          graveyard: [],
-          played: [],
-          startedAt: action.at,
-        },
-      };
-    case "add-instance":
-      if (!state.game) return state;
-      return {
-        ...state,
-        game: {
-          ...state.game,
-          hand: [...state.game.hand, { instanceId: action.instanceId, cardId: action.cardId }],
-        },
-      };
-    case "remove-instance":
-      if (!state.game) return state;
-      return {
-        ...state,
-        game: {
-          ...state.game,
-          hand: state.game.hand.filter((item) => item.instanceId !== action.instanceId),
-        },
-      };
-    case "begin":
-      if (!state.game) return state;
-      return {
-        ...state,
-        decks: touchDeck(state.decks, state.game.deckId, action.at),
-        game: { ...state.game, phase: "active" },
-      };
-    case "play":
-    case "discard": {
-      if (!state.game) return state;
-      const instance = state.game.hand.find((item) => item.instanceId === action.instanceId);
-      if (!instance) return state;
-      const hand = state.game.hand.filter((item) => item.instanceId !== action.instanceId);
-      if (action.type === "play") {
-        return { ...state, game: { ...state.game, hand, played: [...state.game.played, instance] } };
-      }
-      return { ...state, game: { ...state.game, hand, graveyard: [...state.game.graveyard, instance] } };
-    }
-    case "restart":
-      if (!state.game) return state;
-      return {
-        ...state,
-        game: { ...state.game, phase: "setup", hand: [], graveyard: [], played: [] },
-      };
-    case "end":
-      if (!state.game) return { ...state, game: null };
-      return {
-        ...state,
-        game: null,
-        decks: touchDeck(state.decks, state.game.deckId, action.at),
-      };
-    default:
-      return state;
-  }
-}
-
-function duplicateNumber(cards: Card[], collectionId: string, number: string, ignoreId?: string) {
-  const normalized = normalizeNumber(number);
-  return cards.some(
-    (card) =>
-      card.id !== ignoreId &&
-      card.collectionId === collectionId &&
-      normalizeNumber(card.number) === normalized,
-  );
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, undefined, () => loadState(createMockData()));
+  const [state, setState] = useState<AppData>(EMPTY);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [error, setError] = useState("");
+
+  const apply = useCallback((data: AppData) => {
+    setState({
+      collections: data.collections,
+      cards: data.cards,
+      decks: data.decks,
+      game: data.game ?? null,
+    });
+  }, []);
+
+  const load = useCallback(async () => {
+    setStatus("loading");
+    setError("");
+    try {
+      apply(await api.getState());
+      setStatus("ready");
+    } catch (err) {
+      setError(failMessage(err, "Não foi possível conectar ao servidor."));
+      setStatus("error");
+    }
+  }, [apply]);
 
   useEffect(() => {
-    saveState(state);
-  }, [state]);
+    void load();
+  }, [load]);
 
   const value: AppContextValue = {
     ...state,
-    addCollection(draft) {
-      const name = draft.name.trim();
-      if (!name) return { ok: false, message: "Dê um nome à coleção." };
-      const collection: Collection = {
-        id: createId(),
-        name,
-        code: draft.code.trim().toUpperCase(),
-        description: draft.description.trim(),
-        createdAt: new Date().toISOString(),
-      };
-      if (draft.coverImage) collection.coverImage = draft.coverImage;
-      dispatch({ type: "add-collection", collection });
-      return { ok: true, value: collection };
-    },
-    addCard(draft) {
-      const name = draft.name.trim();
-      if (!name || !draft.collectionId || !normalizeNumber(draft.number)) {
-        return { ok: false, message: "Preencha nome, coleção e número." };
-      }
-      if (duplicateNumber(state.cards, draft.collectionId, draft.number)) {
-        return { ok: false, message: "Já existe uma carta com esse número nesta coleção." };
-      }
-      const card = withoutEmptyImage({
-        ...draft,
-        id: createId(),
-        name,
-        number: normalizeNumber(draft.number),
-        typeLine: draft.typeLine.trim(),
-        manaCost: draft.manaCost.trim().toUpperCase(),
-        text: draft.text.trim(),
-        quantity: Math.max(1, draft.quantity),
-        createdAt: new Date().toISOString(),
+    ready: status === "ready",
+    async addCollection(draft) {
+      return asSaveResult(async () => {
+        const data = await api.addCollection(draft);
+        apply(data);
+        return data.value as Collection;
       });
-      dispatch({ type: "add-card", card });
-      return { ok: true, value: card };
     },
-    updateCard(id, draft) {
-      const current = state.cards.find((card) => card.id === id);
-      if (!current) return { ok: false, message: "Carta não encontrada." };
-      const name = draft.name.trim();
-      if (!name || !draft.collectionId || !normalizeNumber(draft.number)) {
-        return { ok: false, message: "Preencha nome, coleção e número." };
-      }
-      if (duplicateNumber(state.cards, draft.collectionId, draft.number, id)) {
-        return { ok: false, message: "Já existe uma carta com esse número nesta coleção." };
-      }
-      const card = withoutEmptyImage({
-        ...current,
-        ...draft,
-        name,
-        number: normalizeNumber(draft.number),
-        typeLine: draft.typeLine.trim(),
-        manaCost: draft.manaCost.trim().toUpperCase(),
-        text: draft.text.trim(),
-        quantity: Math.max(1, draft.quantity),
+    async addCard(draft) {
+      return asSaveResult(async () => {
+        const data = await api.addCard(draft);
+        apply(data);
+        return data.value as Card;
       });
-      dispatch({ type: "update-card", card });
-      return { ok: true, value: card };
     },
-    addDeck(draft) {
-      const name = draft.name.trim();
-      if (!name) return { ok: false, message: "Dê um nome ao deck." };
-      if (!draft.entries.length) return { ok: false, message: "Adicione pelo menos uma carta." };
-      const deck: Deck = {
-        id: createId(),
-        name,
-        entries: draft.entries,
-        createdAt: new Date().toISOString(),
-      };
-      dispatch({ type: "add-deck", deck });
-      return { ok: true, value: deck };
+    async updateCard(id, draft) {
+      return asSaveResult(async () => {
+        const data = await api.updateCard(id, draft);
+        apply(data);
+        return data.value as Card;
+      });
     },
-    updateDeck(id, draft) {
-      const current = state.decks.find((deck) => deck.id === id);
-      if (!current) return { ok: false, message: "Deck não encontrado." };
-      const name = draft.name.trim();
-      if (!name) return { ok: false, message: "Dê um nome ao deck." };
-      if (!draft.entries.length) return { ok: false, message: "Adicione pelo menos uma carta." };
-      const deck: Deck = { ...current, name, entries: draft.entries };
-      dispatch({ type: "update-deck", deck });
-      return { ok: true, value: deck };
+    async addDeck(draft) {
+      return asSaveResult(async () => {
+        const data = await api.addDeck(draft);
+        apply(data);
+        return data.value as Deck;
+      });
     },
-    adjustDeckCard(deckId, cardId, delta) {
-      dispatch({ type: "adjust-deck", deckId, cardId, delta });
+    async updateDeck(id, draft) {
+      return asSaveResult(async () => {
+        const data = await api.updateDeck(id, draft);
+        apply(data);
+        return data.value as Deck;
+      });
     },
-    startSetup(deckId) {
-      dispatch({ type: "start-setup", deckId, at: new Date().toISOString() });
+    async adjustDeckCard(deckId, cardId, delta) {
+      apply(await api.adjustDeckCard(deckId, cardId, delta));
     },
-    addToHand(cardId) {
-      if (!state.game) return null;
-      const instanceId = createId();
-      dispatch({ type: "add-instance", instanceId, cardId });
-      return instanceId;
+    async startSetup(deckId) {
+      apply(await api.startSetup(deckId));
     },
-    removeFromHand(instanceId) {
-      dispatch({ type: "remove-instance", instanceId });
+    async addToHand(cardId) {
+      try {
+        const data = await api.addToHand(cardId);
+        apply(data);
+        return data.instanceId ?? (typeof data.value === "string" ? data.value : null);
+      } catch (err) {
+        toast.error(failMessage(err, "Não foi possível adicionar a carta."));
+        return null;
+      }
     },
-    beginMatch() {
-      dispatch({ type: "begin", at: new Date().toISOString() });
+    async removeFromHand(instanceId) {
+      apply(await api.removeFromHand(instanceId));
     },
-    playCard(instanceId) {
-      dispatch({ type: "play", instanceId });
+    async beginMatch() {
+      apply(await api.beginMatch());
     },
-    discardCard(instanceId) {
-      dispatch({ type: "discard", instanceId });
+    async playCard(instanceId) {
+      apply(await api.playCard(instanceId));
     },
-    restartMatch() {
-      dispatch({ type: "restart" });
+    async discardCard(instanceId) {
+      apply(await api.discardCard(instanceId));
     },
-    endMatch() {
-      dispatch({ type: "end", at: new Date().toISOString() });
+    async restartMatch() {
+      apply(await api.restartMatch());
+    },
+    async endMatch() {
+      apply(await api.endMatch());
     },
   };
+
+  if (status !== "ready") {
+    return (
+      <div className="grid min-h-dvh place-items-center px-6 text-center">
+        {status === "loading" ? (
+          <p className="text-sm text-muted">Carregando sua coleção...</p>
+        ) : (
+          <div>
+            <p className="text-lg font-semibold">Não foi possível conectar</p>
+            <p className="mx-auto mt-2 max-w-sm text-sm text-muted">{error}</p>
+            <p className="mx-auto mt-2 max-w-sm text-sm text-muted">
+              Suba o backend com <span className="text-foreground">poetry run uvicorn app.main:app --reload --host 0.0.0.0</span>
+            </p>
+            <Button className="mt-5" onClick={() => void load()}>
+              Tentar de novo
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

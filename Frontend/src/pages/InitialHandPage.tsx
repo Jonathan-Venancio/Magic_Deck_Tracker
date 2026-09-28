@@ -32,8 +32,9 @@ export function InitialHandPage() {
         autoFocus
         onFocus={() => setSearching(true)}
         onBlur={() => setSearching(false)}
-        onAddToHand={(card) => {
-          addToHand(card.id);
+        onAddToHand={async (card) => {
+          const id = await addToHand(card.id);
+          if (!id) return;
           toast.success(`${firstName(card.name)} adicionada à sua mão`);
         }}
       />
@@ -51,7 +52,7 @@ export function InitialHandPage() {
               action={
                 <button
                   type="button"
-                  onClick={() => removeFromHand(instance.instanceId)}
+                  onClick={() => void removeFromHand(instance.instanceId)}
                   className="text-sm text-danger"
                 >
                   Remover
@@ -72,8 +73,9 @@ export function InitialHandPage() {
             className="w-full"
             size="lg"
             onClick={() => {
-              beginMatch();
-              navigate("/jogar/partida", { replace: true });
+              void beginMatch().then(() => {
+                navigate("/jogar/partida", { replace: true });
+              });
             }}
           >
             Começar partida

@@ -52,7 +52,7 @@ export function CardFormPage() {
     setColors((current) => (current.includes(color) ? current.filter((item) => item !== color) : [...current, color]));
   }
 
-  function save() {
+  async function save() {
     const draft = {
       name,
       collectionId,
@@ -65,7 +65,7 @@ export function CardFormPage() {
       text,
       image,
     };
-    const result = existing ? updateCard(existing.id, draft) : addCard(draft);
+    const result = existing ? await updateCard(existing.id, draft) : await addCard(draft);
     if (!result.ok) {
       toast.error(result.message);
       return;

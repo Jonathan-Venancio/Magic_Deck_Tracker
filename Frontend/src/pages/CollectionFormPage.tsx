@@ -15,8 +15,8 @@ export function CollectionFormPage() {
   const [description, setDescription] = useState("");
   const [coverImage, setCoverImage] = useState<string | undefined>();
 
-  function save() {
-    const result = addCollection({ name, code, description, coverImage });
+  async function save() {
+    const result = await addCollection({ name, code, description, coverImage });
     if (!result.ok) {
       toast.error(result.message);
       return;

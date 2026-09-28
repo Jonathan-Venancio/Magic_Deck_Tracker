@@ -51,9 +51,10 @@ export function GamePage() {
     return collections.find((collection) => collection.id === card.collectionId)?.name ?? "Coleção";
   }
 
-  function handleAdd(card: Card) {
-    const id = addToHand(card.id);
-    if (id) setLastAdded(id);
+  async function handleAdd(card: Card) {
+    const id = await addToHand(card.id);
+    if (!id) return;
+    setLastAdded(id);
     toast.success(`${firstName(card.name)} adicionada à sua mão`);
     setPanel(null);
   }
@@ -237,9 +238,10 @@ export function GamePage() {
                 size="lg"
                 onClick={() => {
                   if (!instanceId) return;
-                  playCard(instanceId);
-                  setPanel(null);
-                  toast.success("Carta jogada");
+                  void playCard(instanceId).then(() => {
+                    setPanel(null);
+                    toast.success("Carta jogada");
+                  });
                 }}
               >
                 Joguei esta carta
@@ -249,9 +251,10 @@ export function GamePage() {
                 variant="danger"
                 onClick={() => {
                   if (!instanceId) return;
-                  discardCard(instanceId);
-                  setPanel(null);
-                  toast.success("Carta enviada ao cemitério");
+                  void discardCard(instanceId).then(() => {
+                    setPanel(null);
+                    toast.success("Carta enviada ao cemitério");
+                  });
                 }}
               >
                 Descartar
@@ -296,8 +299,7 @@ export function GamePage() {
             <Button
               variant="danger"
               onClick={() => {
-                endMatch();
-                navigate("/");
+                void endMatch().then(() => navigate("/"));
               }}
             >
               Encerrar partida
@@ -314,8 +316,7 @@ export function GamePage() {
             <Button
               variant="secondary"
               onClick={() => {
-                restartMatch();
-                navigate("/jogar/mao");
+                void restartMatch().then(() => navigate("/jogar/mao"));
               }}
             >
               Reiniciar partida

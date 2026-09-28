@@ -50,7 +50,7 @@ export function CollectionDetailPage() {
         <EmptyState
           icon={<Library className="size-6" />}
           title="Coleção não encontrada"
-          description="Ela pode ter sido removida deste aparelho."
+          description="Volte para a lista e escolha outra coleção."
         />
       </Page>
     );

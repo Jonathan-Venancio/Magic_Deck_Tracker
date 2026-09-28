@@ -15,7 +15,7 @@ export function HomePage() {
     .slice(0, 3);
   const featured = (game ? decks.find((deck) => deck.id === game.deckId) : undefined) ?? recent[0];
 
-  function continueMatch() {
+  async function continueMatch() {
     if (game?.phase === "active") {
       navigate("/jogar/partida");
       return;
@@ -28,7 +28,7 @@ export function HomePage() {
       navigate("/jogar");
       return;
     }
-    startSetup(featured.id);
+    await startSetup(featured.id);
     navigate("/jogar/mao");
   }
 
@@ -106,7 +106,7 @@ export function HomePage() {
           </Link>
         </Button>
       </section>
-      <p className="mt-4 text-xs text-muted">{pluralCards(ownedCount(cards))} cadastradas neste aparelho.</p>
+      <p className="mt-4 text-xs text-muted">{pluralCards(ownedCount(cards))} cadastradas na sua coleção.</p>
     </Page>
   );
 }

@@ -35,8 +35,8 @@ export function DeckBuilderPage() {
     setEntries((current) => adjustEntries(current, cardId, delta));
   }
 
-  function save() {
-    const result = existing ? updateDeck(existing.id, { name, entries }) : addDeck({ name, entries });
+  async function save() {
+    const result = existing ? await updateDeck(existing.id, { name, entries }) : await addDeck({ name, entries });
     if (!result.ok) {
       toast.error(result.message);
       return;

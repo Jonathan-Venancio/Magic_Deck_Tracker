@@ -1,16 +1,20 @@
 # Magic Deck Tracker
 
-Protótipo frontend do companion para consultar traduções de cartas físicas de Magic durante uma partida.
+Frontend React do companion para consultar traduções de cartas físicas de Magic durante uma partida.
 
-Não há backend, login nem integração com APIs. Os dados de exemplo ficam no navegador (`localStorage`). Imagens de carta só aparecem se você enviar uma do seu aparelho.
+Os dados vêm da API FastAPI em `Backend/`. Imagens de carta só aparecem se você enviar uma.
 
 ## Rodar
+
+Com o backend já no ar (`poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`):
 
 ```bash
 cd Frontend
 npm install
 npm run dev
 ```
+
+Abra http://localhost:5173/
 
 ## Build e PWA
 

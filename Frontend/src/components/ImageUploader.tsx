@@ -61,7 +61,7 @@ export function ImageUploader({
         className="hidden"
         onChange={(event) => void onFile(event.target.files?.[0])}
       />
-      <p className="mt-2 text-xs text-muted">A imagem fica só neste aparelho. Nada é buscado ou gerado automaticamente.</p>
+      <p className="mt-2 text-xs text-muted">A imagem é enviada para o servidor. Nada é buscado ou gerado automaticamente.</p>
     </div>
   );
 }

@@ -66,9 +66,10 @@ export function CardDetailPage() {
                   key={deck.id}
                   type="button"
                   onClick={() => {
-                    adjustDeckCard(deck.id, card.id, 1);
-                    toast.success(`Adicionada a ${deck.name}`);
-                    setDeckOpen(false);
+                    void adjustDeckCard(deck.id, card.id, 1).then(() => {
+                      toast.success(`Adicionada a ${deck.name}`);
+                      setDeckOpen(false);
+                    });
                   }}
                   className="rounded-2xl border border-line bg-card px-4 py-4 text-left hover:border-gold/40"
                 >

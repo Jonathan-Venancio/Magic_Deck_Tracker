@@ -24,10 +24,10 @@ export function ChooseDeckPage() {
     setSelectedId(deckId);
   }
 
-  function begin() {
+  async function begin() {
     if (!selected) return;
     if (!(game?.phase === "setup" && game.deckId === selected.id)) {
-      startSetup(selected.id);
+      await startSetup(selected.id);
     }
     navigate("/jogar/mao");
   }
