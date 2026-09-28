@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Literata", ui-serif, Georgia, serif;
+  --color-ink: #100e0c;
+  --color-background: #0c0b09;
+  --color-foreground: #f6f1e7;
+  --color-muted: #a89b8a;
+  --color-card: #1a1714;
+  --color-raised: #26211c;
+  --color-line: rgba(224, 177, 90, 0.18);
+  --color-gold: #e0b15a;
+  --color-gold-bright: #f3d7a1;
+  --color-danger: #e07a6a;
+  --animate-rise: rise 220ms ease-out both;
+  --animate-deal: deal 280ms ease-out both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes deal {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+html {
+  color-scheme: dark;
+  scroll-padding-bottom: 8rem;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background:
+    radial-gradient(900px 420px at 50% -12%, rgba(224, 177, 90, 0.14), transparent 60%),
+    var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(224, 177, 90, 0.35);
+  color: var(--color-foreground);
+}
+
+.sheet-panel[data-state="open"] {
+  animation: sheet-up 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
