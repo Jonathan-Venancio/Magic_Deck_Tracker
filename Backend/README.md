@@ -24,4 +24,4 @@ DB_PORT=5432
 
 Health check: http://localhost:8000/api/health
 
-Na primeira subida o banco recebe as coleções de exemplo. Depois disso, o que você criar/editar no app fica persistido.
+O banco começa vazio. Coleções, cartas e decks só existem se você cadastrar.

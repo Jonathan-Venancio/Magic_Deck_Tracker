@@ -1,18 +1,20 @@
-import { LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, Library, List } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import { CardSearchResult } from "@/components/CardSearchResult.tsx";
 import { CardThumbnail } from "@/components/CardThumbnail.tsx";
 import { Chip, ChipRow } from "@/components/Chip.tsx";
+import { ConfirmSheet } from "@/components/ConfirmSheet.tsx";
 import { EmptyState } from "@/components/EmptyState.tsx";
 import { Page, PageHeader } from "@/components/PageHeader.tsx";
 import { SearchBar } from "@/components/SearchBar.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { useApp } from "@/context/AppContext.tsx";
 import { ownedCount } from "@/lib/deck.ts";
 import { formatNumber, pluralCards } from "@/lib/format.ts";
 import { searchCards } from "@/lib/search.ts";
 import type { ManaColor } from "@/lib/types.ts";
-import { Library } from "lucide-react";
 
 const colors: { id: ManaColor | "all"; label: string }[] = [
   { id: "all", label: "Todas" },
@@ -25,12 +27,15 @@ const colors: { id: ManaColor | "all"; label: string }[] = [
 
 export function CollectionDetailPage() {
   const { collectionId = "" } = useParams();
-  const { cards, collections } = useApp();
+  const navigate = useNavigate();
+  const { cards, collections, deleteCollection } = useApp();
   const collection = collections.find((item) => item.id === collectionId);
   const [query, setQuery] = useState("");
   const [color, setColor] = useState<ManaColor | "all">("all");
   const [sort, setSort] = useState<"number" | "name">("number");
   const [view, setView] = useState<"grid" | "list">("grid");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [working, setWorking] = useState(false);
 
   const filtered = useMemo(() => {
     const base = searchCards(
@@ -142,6 +147,28 @@ export function CollectionDetailPage() {
           ))}
         </div>
       )}
+      <Button variant="danger" className="mt-8 w-full" onClick={() => setConfirmOpen(true)}>
+        Remover coleção
+      </Button>
+      <ConfirmSheet
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Remover coleção?"
+        description={`Isso apaga ${collection.name} e ${pluralCards(cards.filter((card) => card.collectionId === collection.id).length)}. Elas também saem dos decks, mas os decks em si continuam.`}
+        confirmLabel="Remover coleção e cartas"
+        working={working}
+        onConfirm={async () => {
+          setWorking(true);
+          const result = await deleteCollection(collection.id);
+          setWorking(false);
+          if (!result.ok) {
+            toast.error(result.message);
+            return;
+          }
+          toast.success("Coleção removida.");
+          navigate("/colecao");
+        }}
+      />
     </Page>
   );
 }

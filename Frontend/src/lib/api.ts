@@ -76,12 +76,15 @@ export const api = {
   getState: () => request<AppData>("/state").then(asState),
   addCollection: (draft: CollectionDraft) =>
     request<MutationResponse<Collection>>("/collections", { method: "POST", body: JSON.stringify(draft) }),
+  deleteCollection: (id: string) => request<MutationResponse>(`/collections/${id}`, { method: "DELETE" }),
   addCard: (draft: CardDraft) => request<MutationResponse<Card>>("/cards", { method: "POST", body: JSON.stringify(draft) }),
   updateCard: (id: string, draft: CardDraft) =>
     request<MutationResponse<Card>>(`/cards/${id}`, { method: "PUT", body: JSON.stringify(draft) }),
+  deleteCard: (id: string) => request<MutationResponse>(`/cards/${id}`, { method: "DELETE" }),
   addDeck: (draft: DeckDraft) => request<MutationResponse<Deck>>("/decks", { method: "POST", body: JSON.stringify(draft) }),
   updateDeck: (id: string, draft: DeckDraft) =>
     request<MutationResponse<Deck>>(`/decks/${id}`, { method: "PUT", body: JSON.stringify(draft) }),
+  deleteDeck: (id: string) => request<MutationResponse>(`/decks/${id}`, { method: "DELETE" }),
   adjustDeckCard: (deckId: string, cardId: string, delta: number) =>
     request<MutationResponse>(`/decks/${deckId}/cards`, { method: "POST", body: JSON.stringify({ cardId, delta }) }),
   startSetup: (deckId: string) => request<MutationResponse>("/game/setup", { method: "POST", body: JSON.stringify({ deckId }) }),

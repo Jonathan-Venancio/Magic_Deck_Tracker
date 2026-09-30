@@ -6,21 +6,15 @@ from sqlalchemy.orm import Session
 
 from app import store
 from app.config import CORS_ORIGINS
-from app.database import Base, SessionLocal, engine, get_db, wait_for_database
+from app.database import Base, engine, get_db, wait_for_database
 from app.media import media_response
 from app.schemas import CardDraft, CardIdIn, CollectionDraft, DeckAdjustIn, DeckDraft, InstanceIn, SetupIn
-from app.seed import seed_if_empty
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     wait_for_database()
     Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
-    try:
-        seed_if_empty(db)
-    finally:
-        db.close()
     yield
 
 
@@ -48,6 +42,11 @@ def create_collection(draft: CollectionDraft, db: Session = Depends(get_db)):
     return store.create_collection(db, draft)
 
 
+@app.delete("/api/collections/{collection_id}")
+def remove_collection(collection_id: str, db: Session = Depends(get_db)):
+    return store.delete_collection(db, collection_id)
+
+
 @app.post("/api/cards")
 def create_card(draft: CardDraft, db: Session = Depends(get_db)):
     return store.create_card(db, draft)
@@ -58,6 +57,11 @@ def update_card(card_id: str, draft: CardDraft, db: Session = Depends(get_db)):
     return store.update_card(db, card_id, draft)
 
 
+@app.delete("/api/cards/{card_id}")
+def remove_card(card_id: str, db: Session = Depends(get_db)):
+    return store.delete_card(db, card_id)
+
+
 @app.post("/api/decks")
 def create_deck(draft: DeckDraft, db: Session = Depends(get_db)):
     return store.create_deck(db, draft)
@@ -66,6 +70,11 @@ def create_deck(draft: DeckDraft, db: Session = Depends(get_db)):
 @app.put("/api/decks/{deck_id}")
 def update_deck(deck_id: str, draft: DeckDraft, db: Session = Depends(get_db)):
     return store.update_deck(db, deck_id, draft)
+
+
+@app.delete("/api/decks/{deck_id}")
+def remove_deck(deck_id: str, db: Session = Depends(get_db)):
+    return store.delete_deck(db, deck_id)
 
 
 @app.post("/api/decks/{deck_id}/cards")

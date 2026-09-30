@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { CardSelector } from "@/components/CardSelector.tsx";
+import { ConfirmSheet } from "@/components/ConfirmSheet.tsx";
 import { Page, PageHeader } from "@/components/PageHeader.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Field, Input } from "@/components/ui/field.tsx";
@@ -15,11 +16,13 @@ import { cn } from "@/lib/utils.ts";
 export function DeckBuilderPage() {
   const { deckId } = useParams();
   const navigate = useNavigate();
-  const { cards, collections, decks, addDeck, updateDeck } = useApp();
+  const { cards, collections, decks, addDeck, updateDeck, deleteDeck } = useApp();
   const existing = deckId ? decks.find((deck) => deck.id === deckId) : undefined;
   const [name, setName] = useState(existing?.name ?? "");
   const [entries, setEntries] = useState<DeckEntry[]>(existing?.entries ?? []);
   const [tab, setTab] = useState<"collection" | "deck">("collection");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [working, setWorking] = useState(false);
 
   const total = deckSize(entries);
   const progress = Math.min(100, Math.round((total / 60) * 100));
@@ -139,6 +142,32 @@ export function DeckBuilderPage() {
       <Button className="mt-6 w-full" size="lg" onClick={save}>
         Salvar deck
       </Button>
+      {existing ? (
+        <>
+          <Button variant="danger" className="mt-3 w-full" onClick={() => setConfirmOpen(true)}>
+            Remover deck
+          </Button>
+          <ConfirmSheet
+            open={confirmOpen}
+            onOpenChange={setConfirmOpen}
+            title="Remover deck?"
+            description="O deck some, mas as cartas continuam cadastradas na coleção. Se houver uma partida com este deck, ela será encerrada."
+            confirmLabel="Remover deck"
+            working={working}
+            onConfirm={async () => {
+              setWorking(true);
+              const result = await deleteDeck(existing.id);
+              setWorking(false);
+              if (!result.ok) {
+                toast.error(result.message);
+                return;
+              }
+              toast.success("Deck removido.");
+              navigate("/decks");
+            }}
+          />
+        </>
+      ) : null}
     </Page>
   );
 }

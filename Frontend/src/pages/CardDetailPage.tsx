@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { CardDetails } from "@/components/CardDetails.tsx";
 import { CardImagePlaceholder } from "@/components/CardImagePlaceholder.tsx";
 import { CardViewer } from "@/components/CardViewer.tsx";
+import { ConfirmSheet } from "@/components/ConfirmSheet.tsx";
 import { EmptyState } from "@/components/EmptyState.tsx";
 import { Page, PageHeader } from "@/components/PageHeader.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -14,11 +15,13 @@ import { Library } from "lucide-react";
 export function CardDetailPage() {
   const { cardId = "" } = useParams();
   const navigate = useNavigate();
-  const { cards, collections, decks, adjustDeckCard } = useApp();
+  const { cards, collections, decks, adjustDeckCard, deleteCard } = useApp();
   const card = cards.find((item) => item.id === cardId);
   const collection = collections.find((item) => item.id === card?.collectionId);
   const [viewer, setViewer] = useState(false);
   const [deckOpen, setDeckOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [working, setWorking] = useState(false);
 
   if (!card || !collection) {
     return (
@@ -50,6 +53,9 @@ export function CardDetailPage() {
               <Button onClick={() => setDeckOpen(true)}>Adicionar ao deck</Button>
               <Button variant="secondary" onClick={() => navigate(`/carta/${card.id}/editar`)}>
                 Editar carta
+              </Button>
+              <Button variant="danger" className="sm:col-span-2" onClick={() => setConfirmOpen(true)}>
+                Remover carta
               </Button>
             </>
           }
@@ -88,6 +94,25 @@ export function CardDetailPage() {
           </div>
         )}
       </Sheet>
+      <ConfirmSheet
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Remover carta?"
+        description={`${card.name} sai da coleção e de todos os decks. O cadastro dela some.`}
+        confirmLabel="Remover carta"
+        working={working}
+        onConfirm={async () => {
+          setWorking(true);
+          const result = await deleteCard(card.id);
+          setWorking(false);
+          if (!result.ok) {
+            toast.error(result.message);
+            return;
+          }
+          toast.success("Carta removida.");
+          navigate(`/colecao/${collection.id}`);
+        }}
+      />
     </Page>
   );
 }

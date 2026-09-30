@@ -2,10 +2,10 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.media import public_url, save_image
+from app.media import delete_image, public_url, save_image
 from app.models import Card, Collection, Deck, DeckEntry, Game, GameInstance
 from app.schemas import CardDraft, CollectionDraft, DeckDraft
 
@@ -360,4 +360,48 @@ def end_match(db: Session) -> dict:
         _touch_deck(db, game.deck_id, at)
         db.delete(game)
         db.commit()
+    return mutation(db)
+
+
+def _purge_card_usage(db: Session, card_id: str) -> None:
+    db.execute(delete(GameInstance).where(GameInstance.card_id == card_id))
+    db.execute(delete(DeckEntry).where(DeckEntry.card_id == card_id))
+
+
+def delete_card(db: Session, card_id: str) -> dict:
+    card = db.get(Card, card_id)
+    if not card:
+        raise HTTPException(status_code=404, detail="Carta não encontrada.")
+    _purge_card_usage(db, card.id)
+    delete_image(card.image_file)
+    db.delete(card)
+    db.commit()
+    return mutation(db)
+
+
+def delete_collection(db: Session, collection_id: str) -> dict:
+    collection = db.get(Collection, collection_id)
+    if not collection:
+        raise HTTPException(status_code=404, detail="Coleção não encontrada.")
+    cards = db.scalars(select(Card).where(Card.collection_id == collection_id)).all()
+    for card in cards:
+        _purge_card_usage(db, card.id)
+        delete_image(card.image_file)
+        db.delete(card)
+    delete_image(collection.cover_file)
+    db.delete(collection)
+    db.commit()
+    return mutation(db)
+
+
+def delete_deck(db: Session, deck_id: str) -> dict:
+    deck = db.get(Deck, deck_id)
+    if not deck:
+        raise HTTPException(status_code=404, detail="Deck não encontrado.")
+    game = db.get(Game, GAME_ID)
+    if game and game.deck_id == deck_id:
+        db.delete(game)
+        db.flush()
+    db.delete(deck)
+    db.commit()
     return mutation(db)

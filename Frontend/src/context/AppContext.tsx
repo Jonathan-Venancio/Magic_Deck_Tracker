@@ -9,10 +9,13 @@ type SaveResult<T> = { ok: true; value: T } | { ok: false; message: string };
 interface AppContextValue extends AppData {
   ready: boolean;
   addCollection: (draft: CollectionDraft) => Promise<SaveResult<Collection>>;
+  deleteCollection: (id: string) => Promise<SaveResult<true>>;
   addCard: (draft: CardDraft) => Promise<SaveResult<Card>>;
   updateCard: (id: string, draft: CardDraft) => Promise<SaveResult<Card>>;
+  deleteCard: (id: string) => Promise<SaveResult<true>>;
   addDeck: (draft: DeckDraft) => Promise<SaveResult<Deck>>;
   updateDeck: (id: string, draft: DeckDraft) => Promise<SaveResult<Deck>>;
+  deleteDeck: (id: string) => Promise<SaveResult<true>>;
   adjustDeckCard: (deckId: string, cardId: string, delta: number) => Promise<void>;
   startSetup: (deckId: string) => Promise<void>;
   addToHand: (cardId: string) => Promise<string | null>;
@@ -74,6 +77,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return data.value as Collection;
       });
     },
+    async deleteCollection(id) {
+      return asSaveResult(async () => {
+        apply(await api.deleteCollection(id));
+        return true as const;
+      });
+    },
     async addCard(draft) {
       return asSaveResult(async () => {
         const data = await api.addCard(draft);
@@ -88,6 +97,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return data.value as Card;
       });
     },
+    async deleteCard(id) {
+      return asSaveResult(async () => {
+        apply(await api.deleteCard(id));
+        return true as const;
+      });
+    },
     async addDeck(draft) {
       return asSaveResult(async () => {
         const data = await api.addDeck(draft);
@@ -100,6 +115,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const data = await api.updateDeck(id, draft);
         apply(data);
         return data.value as Deck;
+      });
+    },
+    async deleteDeck(id) {
+      return asSaveResult(async () => {
+        apply(await api.deleteDeck(id));
+        return true as const;
       });
     },
     async adjustDeckCard(deckId, cardId, delta) {

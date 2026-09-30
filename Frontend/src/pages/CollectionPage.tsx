@@ -1,10 +1,13 @@
+import { Library } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { CardSearchResult } from "@/components/CardSearchResult.tsx";
 import { Chip, ChipRow } from "@/components/Chip.tsx";
 import { CollectionCard } from "@/components/CollectionCard.tsx";
+import { EmptyState } from "@/components/EmptyState.tsx";
 import { Page, PageHeader } from "@/components/PageHeader.tsx";
 import { SearchBar } from "@/components/SearchBar.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { useApp } from "@/context/AppContext.tsx";
 import { searchCards } from "@/lib/search.ts";
 
@@ -76,19 +79,34 @@ export function CollectionPage() {
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {(collectionId === "outras"
-          ? collections.filter((collection) => !KNOWN_COLLECTIONS.includes(collection.name))
-          : visibleCollections
-        ).map((collection) => (
-          <CollectionCard
-            key={collection.id}
-            collection={collection}
-            cards={cards}
-            onClick={() => navigate(`/colecao/${collection.id}`)}
+      {!collections.length && !query.trim() ? (
+        <div className="mt-6">
+          <EmptyState
+            icon={<Library className="size-6" />}
+            title="Você ainda não possui coleções"
+            description="Crie uma coleção para cadastrar suas cartas físicas."
+            action={
+              <Button asChild>
+                <Link to="/colecao/nova">Criar coleção</Link>
+              </Button>
+            }
           />
-        ))}
-      </div>
+        </div>
+      ) : (
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {(collectionId === "outras"
+            ? collections.filter((collection) => !KNOWN_COLLECTIONS.includes(collection.name))
+            : visibleCollections
+          ).map((collection) => (
+            <CollectionCard
+              key={collection.id}
+              collection={collection}
+              cards={cards}
+              onClick={() => navigate(`/colecao/${collection.id}`)}
+            />
+          ))}
+        </div>
+      )}
       {collectionId === "outras" &&
       !collections.some((collection) => !KNOWN_COLLECTIONS.includes(collection.name)) ? (
         <p className="mt-4 text-sm text-muted">As coleções que você criar aparecem aqui.</p>

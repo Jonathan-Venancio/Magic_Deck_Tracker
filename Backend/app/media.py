@@ -52,3 +52,11 @@ def media_response(filename: str) -> FileResponse:
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Arquivo não encontrado.")
     return FileResponse(path)
+
+
+def delete_image(filename: str | None) -> None:
+    if not filename:
+        return
+    path = MEDIA_DIR / Path(filename).name
+    if path.is_file():
+        path.unlink()
