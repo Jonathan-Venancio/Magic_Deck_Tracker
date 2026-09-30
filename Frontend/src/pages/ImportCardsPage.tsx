@@ -12,6 +12,7 @@ const EXAMPLES = [
   { cost: "2U", meaning: "Dois genéricos + um azul" },
   { cost: "1", meaning: "Um genérico (qualquer cor)" },
   { cost: "1WU", meaning: "Um genérico + branco + azul" },
+  { cost: "1R/G", meaning: "Um genérico + verde ou vermelha (híbrida)" },
   { cost: "UU", meaning: "Dois azuis" },
   { cost: "R", meaning: "Um vermelho" },
 ];
@@ -89,7 +90,7 @@ export function ImportCardsPage() {
         <div className="mt-4 grid gap-2">
           {EXAMPLES.map((item) => (
             <div key={item.cost} className="flex items-center gap-3 rounded-2xl border border-line bg-raised px-3 py-3">
-              <code className="w-14 font-semibold text-gold">{item.cost}</code>
+              <code className="w-16 shrink-0 font-semibold text-gold">{item.cost}</code>
               <ManaBadge cost={item.cost} />
               <p className="min-w-0 flex-1 text-sm text-muted">{item.meaning}</p>
             </div>
@@ -101,7 +102,8 @@ export function ImportCardsPage() {
         </div>
         <p className="mt-4 text-sm text-muted">
           Cores: deixe vazio e o app lê pelo custo (2U vira Azul). Carta com mais de uma cor: na coluna Cores use
-          U, W ou Azul, Branco ou UW. No custo, 1WU já marca as duas cores.
+          U, W ou Azul, Branco ou UW. No custo, 1WU já marca as duas cores. Mana híbrida (uma mana que pode ser
+          verde ou vermelha) é 1R/G — diferente de 1RG, que pede as duas.
         </p>
         <p className="mt-2 text-sm text-muted">
           Se a coleção da linha ainda não existir, o app cria. Se já existir, a carta entra nela.

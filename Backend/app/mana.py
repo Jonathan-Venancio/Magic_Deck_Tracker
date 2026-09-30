@@ -4,6 +4,8 @@ import unicodedata
 from app.schemas import CardCategory, ManaColor
 
 COLOR_ORDER: tuple[ManaColor, ...] = ("W", "U", "B", "R", "G")
+COLOR_LETTERS = "WUBRG"
+PIP_LETTERS = "WUBRGCX"
 
 COLOR_NAMES: dict[str, ManaColor] = {
     "w": "W",
@@ -46,6 +48,10 @@ CATEGORY_NAMES: dict[str, CardCategory] = {
     "artifact": "other",
 }
 
+_MANA_ERROR = (
+    "Custo de mana inválido. Use 2U, 1, 1WU. Híbrida (verde ou vermelha): 1R/G."
+)
+
 
 def fold_text(value: str) -> str:
     normalized = unicodedata.normalize("NFD", value.strip())
@@ -69,28 +75,82 @@ def cell_text(value: object) -> str:
     return str(value).strip()
 
 
+def _sort_hybrid(left: str, right: str) -> str:
+    if left in COLOR_ORDER and right in COLOR_ORDER:
+        ordered = [color for color in COLOR_ORDER if color in {left, right}]
+        if len(ordered) == 2:
+            return f"{ordered[0]}/{ordered[1]}"
+    return f"{left}/{right}"
+
+
+def _normalize_pip(raw: str) -> str:
+    pip = raw.strip().upper()
+    if re.fullmatch(r"\d+", pip):
+        return pip
+    if re.fullmatch(r"[WUBRG]/[WUBRG]", pip):
+        left, right = pip.split("/")
+        return _sort_hybrid(left, right)
+    if re.fullmatch(r"2/[WUBRG]", pip):
+        return pip
+    if len(pip) == 1 and pip in PIP_LETTERS:
+        return pip
+    raise ValueError(_MANA_ERROR)
+
+
+def tokenize_mana(cost: str) -> list[str]:
+    compact = re.sub(r"\s+", "", cost.strip().upper())
+    if not compact:
+        return []
+    braces = re.findall(r"\{([^}]+)\}", compact)
+    if braces:
+        return [_normalize_pip(part) for part in braces]
+    body = compact.replace("{", "").replace("}", "")
+    pips: list[str] = []
+    index = 0
+    while index < len(body):
+        char = body[index]
+        if char.isdigit():
+            end = index
+            while end < len(body) and body[end].isdigit():
+                end += 1
+            if end + 1 < len(body) and body[end] == "/" and body[end + 1] in COLOR_LETTERS:
+                pips.append(_normalize_pip(body[index : end + 2]))
+                index = end + 2
+                continue
+            pips.append(body[index:end])
+            index = end
+            continue
+        if (
+            char in COLOR_LETTERS
+            and index + 2 < len(body)
+            and body[index + 1] == "/"
+            and body[index + 2] in COLOR_LETTERS
+        ):
+            pips.append(_normalize_pip(body[index : index + 3]))
+            index += 3
+            continue
+        if char in PIP_LETTERS:
+            pips.append(char)
+            index += 1
+            continue
+        raise ValueError(_MANA_ERROR)
+    return pips
+
+
 def normalize_mana(cost: str) -> str:
-    cleaned = cost.strip().upper().replace("{", "").replace("}", "").replace(" ", "")
-    if not cleaned:
-        return ""
-    match = re.fullmatch(r"(\d+)?([WUBRGCX]*)", cleaned)
-    if not match:
-        raise ValueError(
-            "Custo de mana inválido. Use o número dos genéricos e as letras W U B R G. Ex.: 2U, 1, 1WU."
-        )
-    generic, pips = match.groups()
-    return f"{generic or ''}{pips or ''}"
+    return "".join(tokenize_mana(cost))
 
 
 def colors_from_mana(cost: str) -> list[ManaColor]:
     try:
-        normalized = normalize_mana(cost)
+        pips = tokenize_mana(cost)
     except ValueError:
         return []
     found: list[ManaColor] = []
-    for symbol in normalized:
-        if symbol in COLOR_ORDER and symbol not in found:
-            found.append(symbol)  # type: ignore[arg-type]
+    for pip in pips:
+        for symbol in pip.replace("/", ""):
+            if symbol in COLOR_ORDER and symbol not in found:
+                found.append(symbol)  # type: ignore[arg-type]
     return [color for color in COLOR_ORDER if color in found]
 
 

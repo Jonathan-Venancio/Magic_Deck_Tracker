@@ -113,6 +113,7 @@ INSTRUCTIONS = [
     "  2U  = dois genéricos + um azul",
     "  1   = um genérico",
     "  1WU = um genérico + branco + azul (carta de duas cores)",
+    "  1R/G = um genérico + uma mana verde OU vermelha (híbrida)",
     "  UU  = dois azuis",
     "  R   = um vermelho",
     "  (vazio) = terreno, sem custo",

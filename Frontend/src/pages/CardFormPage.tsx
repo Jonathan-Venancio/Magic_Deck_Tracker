@@ -135,7 +135,7 @@ export function CardFormPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <Field
                 label="Custo de mana"
-                hint="Número = genérico (qualquer cor). Letras: W branco, U azul, B preto, R vermelho, G verde. Ex.: 2U, 1, 1WU."
+                hint="Número = genérico. Letras: W U B R G. Híbrida (verde ou vermelha): 1R/G. Ex.: 2U, 1, 1WU."
               >
                 <Input
                   value={manaCost}
