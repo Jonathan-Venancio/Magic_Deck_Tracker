@@ -2,7 +2,7 @@
 
 Companion para consultar traduções das suas cartas físicas de Magic durante a partida.
 
-O frontend é React + Vite. O backend é FastAPI com Poetry e SQLite.
+O frontend é React + Vite. O backend é FastAPI com Poetry. Em produção usa PostgreSQL; localmente, sem `DB_HOST`, cai no SQLite.
 
 ## Backend
 
@@ -40,6 +40,20 @@ A imagem do frontend já aponta para `https://api.magicdecktracker.jonathanvenan
 
 - `magicdecktracker.jonathanvenancio.site` → frontend `:80`
 - `api.magicdecktracker.jonathanvenancio.site` → backend `:8000`
+
+No EasyPanel, no serviço do backend, use as mesmas variáveis do outro projeto:
+
+```
+DB_HOST=nome-do-servico-postgres
+DB_NAME=magicdecktracker
+DB_USER=jonathan
+DB_PASSWORD=sua-senha
+DB_PORT=5432
+CORS_ORIGINS=https://magicdecktracker.jonathanvenancio.site
+DATA_DIR=/data
+```
+
+`DB_HOST` é o nome interno do container/serviço Postgres no EasyPanel, não o domínio público.
 
 ```bash
 export DOCKERHUB_USERNAME=seu-usuario

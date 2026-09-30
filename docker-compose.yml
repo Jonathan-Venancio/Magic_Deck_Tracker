@@ -5,6 +5,11 @@ services:
     environment:
       DATA_DIR: /data
       CORS_ORIGINS: https://magicdecktracker.jonathanvenancio.site
+      DB_HOST: jonathan_db
+      DB_NAME: magicdecktracker
+      DB_USER: jonathan
+      DB_PASSWORD: senha
+      DB_PORT: 5432
     volumes:
       - backend-data:/data
     ports:

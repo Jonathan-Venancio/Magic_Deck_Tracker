@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app import store
 from app.config import CORS_ORIGINS
-from app.database import Base, SessionLocal, engine, get_db
+from app.database import Base, SessionLocal, engine, get_db, wait_for_database
 from app.media import media_response
 from app.schemas import CardDraft, CardIdIn, CollectionDraft, DeckAdjustIn, DeckDraft, InstanceIn, SetupIn
 from app.seed import seed_if_empty
@@ -14,6 +14,7 @@ from app.seed import seed_if_empty
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    wait_for_database()
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
