@@ -20,6 +20,9 @@ export function AppShell() {
             <Link to="/carta/nova">Adicionar carta</Link>
           </Button>
           <Button variant="secondary" asChild>
+            <Link to="/cartas/importar">Importar planilha</Link>
+          </Button>
+          <Button variant="secondary" asChild>
             <Link to="/colecao/nova">Criar coleção</Link>
           </Button>
           <Button variant="secondary" asChild>

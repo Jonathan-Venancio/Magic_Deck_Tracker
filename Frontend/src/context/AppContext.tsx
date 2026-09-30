@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button.tsx";
 import { ApiError, api, normalizeAppData } from "@/lib/api.ts";
-import type { AppData, Card, CardDraft, Collection, CollectionDraft, Deck, DeckDraft } from "@/lib/types.ts";
+import type { AppData, Card, CardDraft, Collection, CollectionDraft, Deck, DeckDraft, ImportSummary } from "@/lib/types.ts";
 
 type SaveResult<T> = { ok: true; value: T } | { ok: false; message: string };
 
@@ -13,6 +13,7 @@ interface AppContextValue extends AppData {
   addCard: (draft: CardDraft) => Promise<SaveResult<Card>>;
   updateCard: (id: string, draft: CardDraft) => Promise<SaveResult<Card>>;
   deleteCard: (id: string) => Promise<SaveResult<true>>;
+  importCards: (file: File) => Promise<SaveResult<ImportSummary>>;
   addDeck: (draft: DeckDraft) => Promise<SaveResult<Deck>>;
   updateDeck: (id: string, draft: DeckDraft) => Promise<SaveResult<Deck>>;
   deleteDeck: (id: string) => Promise<SaveResult<true>>;
@@ -101,6 +102,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return asSaveResult(async () => {
         apply(await api.deleteCard(id));
         return true as const;
+      });
+    },
+    async importCards(file) {
+      return asSaveResult(async () => {
+        const data = await api.importCards(file);
+        apply(data);
+        return (
+          data.import ?? {
+            created: 0,
+            updated: 0,
+            collectionsCreated: 0,
+            errors: [],
+          }
+        );
       });
     },
     async addDeck(draft) {

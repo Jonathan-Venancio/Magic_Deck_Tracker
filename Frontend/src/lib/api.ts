@@ -1,4 +1,4 @@
-import type { AppData, Card, CardDraft, Collection, CollectionDraft, Deck, DeckDraft } from "@/lib/types.ts";
+import type { AppData, Card, CardDraft, Collection, CollectionDraft, Deck, DeckDraft, ImportSummary } from "@/lib/types.ts";
 
 export const API_BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
 
@@ -15,6 +15,7 @@ export class ApiError extends Error {
 type MutationResponse<T = unknown> = AppData & {
   value?: T;
   instanceId?: string;
+  import?: ImportSummary;
 };
 
 function resolveMedia(url?: string) {
@@ -41,11 +42,12 @@ export function normalizeAppData(data: AppData): AppData {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const isForm = typeof FormData !== "undefined" && init?.body instanceof FormData;
   let response: Response;
   try {
     response = await fetch(`${API_BASE}/api${path}`, {
       headers: {
-        "Content-Type": "application/json",
+        ...(isForm ? {} : { "Content-Type": "application/json" }),
         ...(init?.headers ?? {}),
       },
       ...init,
@@ -81,6 +83,33 @@ export const api = {
   updateCard: (id: string, draft: CardDraft) =>
     request<MutationResponse<Card>>(`/cards/${id}`, { method: "PUT", body: JSON.stringify(draft) }),
   deleteCard: (id: string) => request<MutationResponse>(`/cards/${id}`, { method: "DELETE" }),
+  importCards: (file: File) => {
+    const body = new FormData();
+    body.append("file", file);
+    return request<MutationResponse<ImportSummary> & { import: ImportSummary }>("/cards/import", { method: "POST", body });
+  },
+  async downloadTemplate(fmt: "xlsx" | "ods") {
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE}/api/cards/template?fmt=${fmt}`);
+    } catch {
+      throw new ApiError("Não foi possível conectar ao servidor.", 0);
+    }
+    if (!response.ok) {
+      const data = (await response.json().catch(() => ({}))) as { detail?: unknown };
+      const detail = data.detail;
+      throw new ApiError(typeof detail === "string" ? detail : "Não foi possível baixar o modelo.", response.status);
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `modelo-cartas.${fmt}`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  },
   addDeck: (draft: DeckDraft) => request<MutationResponse<Deck>>("/decks", { method: "POST", body: JSON.stringify(draft) }),
   updateDeck: (id: string, draft: DeckDraft) =>
     request<MutationResponse<Deck>>(`/decks/${id}`, { method: "PUT", body: JSON.stringify(draft) }),

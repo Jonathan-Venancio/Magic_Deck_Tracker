@@ -1,14 +1,16 @@
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app import store
 from app.config import CORS_ORIGINS
 from app.database import Base, engine, get_db, wait_for_database
-from app.media import media_response
 from app.schemas import CardDraft, CardIdIn, CollectionDraft, DeckAdjustIn, DeckDraft, InstanceIn, SetupIn
+from app.media import media_response
+from app.spreadsheet import build_template
 
 
 @asynccontextmanager
@@ -45,6 +47,25 @@ def create_collection(draft: CollectionDraft, db: Session = Depends(get_db)):
 @app.delete("/api/collections/{collection_id}")
 def remove_collection(collection_id: str, db: Session = Depends(get_db)):
     return store.delete_collection(db, collection_id)
+
+
+@app.get("/api/cards/template")
+def card_template(fmt: str = "xlsx"):
+    kind = fmt.lower().strip()
+    if kind not in {"xlsx", "ods"}:
+        raise HTTPException(status_code=400, detail="Use fmt=xlsx ou fmt=ods.")
+    data, media, filename = build_template(kind)
+    return Response(
+        content=data,
+        media_type=media,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@app.post("/api/cards/import")
+async def import_cards(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    content = await file.read()
+    return store.import_cards(db, file.filename or "", content)
 
 
 @app.post("/api/cards")

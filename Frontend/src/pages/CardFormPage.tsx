@@ -133,7 +133,10 @@ export function CardFormPage() {
               <Input value={typeLine} onChange={(event) => setTypeLine(event.target.value)} placeholder="Criatura Lendária — Humano Mago" />
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Custo de mana">
+              <Field
+                label="Custo de mana"
+                hint="Número = genérico (qualquer cor). Letras: W branco, U azul, B preto, R vermelho, G verde. Ex.: 2U, 1, 1WU."
+              >
                 <Input
                   value={manaCost}
                   onChange={(event) => {
@@ -142,7 +145,7 @@ export function CardFormPage() {
                     const parsed = colorsFromMana(next);
                     if (parsed.length) setColors(parsed);
                   }}
-                  placeholder="2UU"
+                  placeholder="2U"
                 />
               </Field>
               <Field label="Categoria">

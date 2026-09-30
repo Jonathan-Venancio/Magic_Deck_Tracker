@@ -15,9 +15,9 @@ export function sortColors(colors: ManaColor[]): ManaColor[] {
 }
 
 export function parseMana(cost: string): string[] {
-  const cleaned = cost.trim().toUpperCase();
+  const cleaned = cost.trim().toUpperCase().replace(/[{}\s]/g, "");
   if (!cleaned) return [];
-  const match = cleaned.match(/^(\d+)?([WUBRGC]*)$/);
+  const match = cleaned.match(/^(\d+)?([WUBRGCX]*)$/);
   if (!match) return [cleaned];
   const pips: string[] = [];
   if (match[1]) pips.push(match[1]);

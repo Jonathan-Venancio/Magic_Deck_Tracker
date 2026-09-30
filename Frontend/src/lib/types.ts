@@ -84,3 +84,15 @@ export interface DeckDraft {
   name: string;
   entries: DeckEntry[];
 }
+
+export interface ImportError {
+  row: number;
+  message: string;
+}
+
+export interface ImportSummary {
+  created: number;
+  updated: number;
+  collectionsCreated: number;
+  errors: ImportError[];
+}

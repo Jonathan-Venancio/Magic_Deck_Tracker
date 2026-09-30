@@ -4,6 +4,7 @@ import { Sheet } from "@/components/ui/sheet.tsx";
 export function AddMenu({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const items = [
     { to: "/carta/nova", title: "Adicionar carta", detail: "Cadastrar nome, número, tradução e imagem." },
+    { to: "/cartas/importar", title: "Importar planilha", detail: "Subir um Excel ou Calc com várias cartas." },
     { to: "/colecao/nova", title: "Criar coleção", detail: "Agrupar cartas por coleção." },
     { to: "/decks/novo", title: "Criar deck", detail: "Montar um deck com as cartas cadastradas." },
   ];

@@ -12,6 +12,7 @@ import { DeckBuilderPage } from "@/pages/DeckBuilderPage.tsx";
 import { DecksPage } from "@/pages/DecksPage.tsx";
 import { GamePage } from "@/pages/GamePage.tsx";
 import { HomePage } from "@/pages/HomePage.tsx";
+import { ImportCardsPage } from "@/pages/ImportCardsPage.tsx";
 import { InitialHandPage } from "@/pages/InitialHandPage.tsx";
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="colecao/nova" element={<CollectionFormPage />} />
             <Route path="colecao/:collectionId" element={<CollectionDetailPage />} />
             <Route path="carta/nova" element={<CardFormPage />} />
+            <Route path="cartas/importar" element={<ImportCardsPage />} />
             <Route path="carta/:cardId" element={<CardDetailPage />} />
             <Route path="carta/:cardId/editar" element={<CardFormPage />} />
             <Route path="decks" element={<DecksPage />} />

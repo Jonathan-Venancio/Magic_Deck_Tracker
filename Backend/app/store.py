@@ -5,6 +5,13 @@ from fastapi import HTTPException
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session, selectinload
 
+from app.mana import (
+    fold_text,
+    normalize_mana,
+    parse_category,
+    parse_colors,
+    parse_quantity,
+)
 from app.media import delete_image, public_url, save_image
 from app.models import Card, Collection, Deck, DeckEntry, Game, GameInstance
 from app.schemas import CardDraft, CollectionDraft, DeckDraft
@@ -202,7 +209,7 @@ def _upsert_card(db: Session, current: Card | None, draft: CardDraft) -> dict:
         "number": number,
         "type_line": draft.typeLine.strip(),
         "category": draft.category,
-        "mana_cost": draft.manaCost.strip().upper(),
+        "mana_cost": _safe_mana(draft.manaCost),
         "colors": join_colors(list(draft.colors)),
         "quantity": max(1, draft.quantity),
         "text": draft.text.strip(),
@@ -217,6 +224,97 @@ def _upsert_card(db: Session, current: Card | None, draft: CardDraft) -> dict:
         db.add(item)
     db.commit()
     return mutation(db, dump_card(item))
+
+
+def _safe_mana(value: str) -> str:
+    raw = value.strip()
+    if not raw:
+        return ""
+    try:
+        return normalize_mana(raw)
+    except ValueError:
+        return raw.upper().replace("{", "").replace("}", "").replace(" ", "")
+
+
+def _get_or_create_collection(db: Session, by_fold: dict[str, Collection], name: str) -> tuple[Collection, bool]:
+    key = fold_text(name)
+    existing = by_fold.get(key)
+    if existing:
+        return existing, False
+    item = Collection(
+        id=new_id(),
+        name=name.strip(),
+        code="",
+        description="",
+        cover_file=None,
+        created_at=now_iso(),
+    )
+    db.add(item)
+    db.flush()
+    by_fold[key] = item
+    return item, True
+
+
+def import_cards(db: Session, filename: str, content: bytes) -> dict:
+    from app.spreadsheet import read_card_rows
+
+    sheet_rows = read_card_rows(filename, content)
+    by_fold = {fold_text(item.name): item for item in db.scalars(select(Collection)).all()}
+    created = 0
+    updated = 0
+    collections_created = 0
+    errors: list[dict] = []
+
+    for row in sheet_rows:
+        try:
+            name = row.name.strip()
+            collection_name = row.collection.strip()
+            number = normalize_number(row.number)
+            if not name or not collection_name or not number:
+                raise ValueError("Preencha nome, coleção e número.")
+            mana = normalize_mana(row.mana) if row.mana.strip() else ""
+            colors = parse_colors(row.colors, mana)
+            category = parse_category(row.category, row.type_line)
+            quantity = parse_quantity(row.quantity)
+            collection, was_created = _get_or_create_collection(db, by_fold, collection_name)
+            if was_created:
+                collections_created += 1
+            current = db.scalar(select(Card).where(Card.collection_id == collection.id, Card.number == number))
+            payload = {
+                "name": name,
+                "collection_id": collection.id,
+                "number": number,
+                "type_line": row.type_line.strip(),
+                "category": category,
+                "mana_cost": mana,
+                "colors": join_colors(list(colors)),
+                "quantity": quantity,
+                "text": row.text.strip(),
+            }
+            if current:
+                for key, value in payload.items():
+                    setattr(current, key, value)
+                updated += 1
+            else:
+                db.add(Card(id=new_id(), created_at=now_iso(), image_file=None, **payload))
+                created += 1
+            db.flush()
+        except ValueError as error:
+            errors.append({"row": row.row, "message": str(error)})
+
+    if created or updated or collections_created:
+        db.commit()
+    else:
+        db.rollback()
+
+    payload = mutation(db)
+    payload["import"] = {
+        "created": created,
+        "updated": updated,
+        "collectionsCreated": collections_created,
+        "errors": errors,
+    }
+    return payload
 
 
 def create_deck(db: Session, draft: DeckDraft) -> dict:

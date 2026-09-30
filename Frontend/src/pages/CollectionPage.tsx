@@ -34,7 +34,15 @@ export function CollectionPage() {
 
   return (
     <Page>
-      <PageHeader title="Minha Coleção" subtitle="Busque pelo nome ou pelo número impresso na carta." />
+      <PageHeader
+        title="Minha Coleção"
+        subtitle="Busque pelo nome ou pelo número impresso na carta."
+        action={
+          <Button asChild size="sm" variant="secondary">
+            <Link to="/cartas/importar">Importar</Link>
+          </Button>
+        }
+      />
       <SearchBar value={query} onChange={setQuery} placeholder="Buscar carta ou número..." />
       <div className="mt-3">
         <ChipRow>
@@ -84,11 +92,16 @@ export function CollectionPage() {
           <EmptyState
             icon={<Library className="size-6" />}
             title="Você ainda não possui coleções"
-            description="Crie uma coleção para cadastrar suas cartas físicas."
+            description="Crie uma coleção ou importe uma planilha. Se a coleção da planilha não existir, o app cria."
             action={
-              <Button asChild>
-                <Link to="/colecao/nova">Criar coleção</Link>
-              </Button>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button asChild>
+                  <Link to="/colecao/nova">Criar coleção</Link>
+                </Button>
+                <Button asChild variant="secondary">
+                  <Link to="/cartas/importar">Importar planilha</Link>
+                </Button>
+              </div>
             }
           />
         </div>
